@@ -1,0 +1,134 @@
+6238  execve("./objstore", ["./objstore"], 0x7fff5be882b8 /* 50 vars */) = 0
+6238  brk(NULL)                         = 0x558b20796000
+6238  access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+6238  access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+6238  openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+6238  fstat(3, {st_mode=S_IFREG|0644, st_size=87926, ...}) = 0
+6238  mmap(NULL, 87926, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7faae8bc9000
+6238  close(3)                          = 0
+6238  access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+6238  openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+6238  read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0000b\0\0\0\0\0\0"..., 832) = 832
+6238  fstat(3, {st_mode=S_IFREG|0755, st_size=144976, ...}) = 0
+6238  mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7faae8bc7000
+6238  mmap(NULL, 2221184, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7faae8799000
+6238  mprotect(0x7faae87b3000, 2093056, PROT_NONE) = 0
+6238  mmap(0x7faae89b2000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x19000) = 0x7faae89b2000
+6238  mmap(0x7faae89b4000, 13440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7faae89b4000
+6238  close(3)                          = 0
+6238  access("/etc/ld.so.nohwcap", F_OK) = -1 ENOENT (No such file or directory)
+6238  openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+6238  read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+6238  fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+6238  mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7faae83a8000
+6238  mprotect(0x7faae858f000, 2097152, PROT_NONE) = 0
+6238  mmap(0x7faae878f000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7faae878f000
+6238  mmap(0x7faae8795000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7faae8795000
+6238  close(3)                          = 0
+6238  mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7faae8bc4000
+6238  arch_prctl(ARCH_SET_FS, 0x7faae8bc4740) = 0
+6238  mprotect(0x7faae878f000, 16384, PROT_READ) = 0
+6238  mprotect(0x7faae89b2000, 4096, PROT_READ) = 0
+6238  mprotect(0x558b202e6000, 4096, PROT_READ) = 0
+6238  mprotect(0x7faae8bdf000, 4096, PROT_READ) = 0
+6238  munmap(0x7faae8bc9000, 87926)     = 0
+6238  set_tid_address(0x7faae8bc4a10)   = 6238
+6238  set_robust_list(0x7faae8bc4a20, 24) = 0
+6238  rt_sigaction(SIGRTMIN, {sa_handler=0x7faae879ecb0, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x7faae87ab890}, NULL, 8) = 0
+6238  rt_sigaction(SIGRT_1, {sa_handler=0x7faae879ed50, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x7faae87ab890}, NULL, 8) = 0
+6238  rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+6238  prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+6238  unlink("./objstore.sock")         = 0
+6238  socket(AF_UNIX, SOCK_STREAM, 0)   = 3
+6238  bind(3, {sa_family=AF_UNIX, sun_path="./objstore.sock"}, 110) = 0
+6238  listen(3, 32)                     = 0
+6238  accept(3, NULL, NULL)             = 4
+6238  fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 2), ...}) = 0
+6238  brk(NULL)                         = 0x558b20796000
+6238  brk(0x558b207b7000)               = 0x558b207b7000
+6238  write(1, "connessione server avvenuta con "..., 41) = 41
+6238  mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7faae7ba7000
+6238  mprotect(0x7faae7ba8000, 8388608, PROT_READ|PROT_WRITE) = 0
+6238  clone(child_stack=0x7faae83a6fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7faae83a79d0, tls=0x7faae83a7700, child_tidptr=0x7faae83a79d0) = 6240
+6240  set_robust_list(0x7faae83a79e0, 24 <unfinished ...>
+6238  accept(3, NULL, NULL <unfinished ...>
+6240  <... set_robust_list resumed> )   = 0
+6240  mmap(NULL, 134217728, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x7faadfba7000
+6240  munmap(0x7faadfba7000, 4558848)   = 0
+6240  munmap(0x7faae4000000, 62550016)  = 0
+6240  mprotect(0x7faae0000000, 135168, PROT_READ|PROT_WRITE) = 0
+6240  write(1, "il server sta per leggere\n", 26) = 26
+6240  nanosleep({tv_sec=2, tv_nsec=0}, 0x7faae83a6b40) = 0
+6240  read(4, "REGISTER m", 10)         = 10
+6240  write(1, "aaaaaaaaaa REGISTER m\n", 22) = 22
+6240  read(4, "auro \n\0", 10)          = 7
+6240  write(1, "aaaaaaaaaa auro \n", 17) = 17
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il risultato della read 7\n", 26) = 26
+6240  write(1, "IL SERVER HA LETTO:REGISTER maur"..., 35) = 35
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il server stampa il token REGIST"..., 35) = 35
+6240  write(1, "SONO NELLA FUNZIONE CHE CREA LA "..., 42) = 42
+6240  write(1, "nome cartella ./data/mauro\n", 27) = 27
+6240  write(1, "ultimo token mauro\n", 19) = 19
+6240  mkdir("./data/mauro", 0777)       = -1 EEXIST (File exists)
+6240  write(1, "cartella esistente\n", 19) = 19
+6240  write(1, "STAMPA CODESTO PERCORSO ./data/m"..., 37) = 37
+6240  write(1, "END FUNCTION DIRECTORY\n", 23) = 23
+6240  write(1, "ORA VOGLIO SCRIVERE AL CLIENT \n", 31) = 31
+6240  write(1, "OK \n", 4)              = 4
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "scrivo al client il risultato pr"..., 50) = 50
+6240  write(4, "OK \n\0", 5)            = 5
+6240  write(1, "dopo la scrittura del server OK "..., 33) = 33
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il server sta per leggere\n", 26) = 26
+6240  nanosleep({tv_sec=2, tv_nsec=0}, 0x7faae83a6b40) = 0
+6240  read(4, "STORE bibb", 10)         = 10
+6240  write(1, "aaaaaaaaaa STORE bibb\n", 22) = 22
+6240  read(4, "o.txt 22 \n", 10)        = 10
+6240  write(1, "aaaaaaaaaa o.txt 22 \n", 21) = 21
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il risultato della read 10\n", 27) = 27
+6240  write(1, "IL SERVER HA LETTO:STORE bibbo.t"..., 39) = 39
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il server stampa il token STORE\n", 32) = 32
+6240  write(1, "STORE success\n", 14)   = 14
+6240  write(1, "contenuto di data in mystrok_r e"..., 53) = 53
+6240  write(1, "STAMPA store_len e' STORE bibbo."..., 40) = 40
+6240  write(1, "STRLEN store_len 19\n", 20) = 20
+6240  write(1, "aaaa 19\n", 8)          = 8
+6240  write(1, "a22a\n", 5)             = 5
+6240  write(1, "la dimensione e' 22\n", 20) = 20
+6240  write(1, "il primo token e' il nomesssssss"..., 71) = 71
+6240  write(1, "sto per aprire il file in lettur"..., 34) = 34
+6240  write(1, "il nome del file e' ./data/mauro"..., 43) = 43
+6240  openat(AT_FDCWD, "./data/mauro/bibbo.txt", O_RDWR|O_CREAT|O_TRUNC, 0777) = 6
+6240  write(1, "fd server open 6\n", 17) = 17
+6240  write(1, "dimensione data 22\n", 19) = 19
+6240  write(1, "dim_store_len 21\n", 17) = 17
+6240  write(1, "COUNT 2\n", 8)          = 8
+6240  write(1, "b= 0\n", 5)             = 5
+6240  write(1, "la cosa che faccio sembra giusta"..., 34) = 34
+6240  write(6, "", 0)                   = 0
+6240  write(1, "len:22\n", 7)           = 7
+6240  read(4, " ciao il mondo e' bello\0", 256) = 24
+6240  write(1, " ciao il mondo e' bello\n", 24) = 24
+6240  write(6, " ciao il mondo e' bello\0", 24) = 24
+6240  write(1, "OK \n", 4)              = 4
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "scrivo al client il risultato pr"..., 50) = 50
+6240  write(4, "OK \n\0", 5)            = 5
+6240  write(1, "dopo la scrittura del server OK "..., 33) = 33
+6240  write(1, "\n", 1)                 = 1
+6240  write(1, "il server sta per leggere\n", 26) = 26
+6240  nanosleep({tv_sec=2, tv_nsec=0}, 0x7faae83a6b40) = 0
+6240  read(4, "", 10)                   = 0
+6240  write(1, "aaaaaaaaaa \n", 12)     = 12
+6240  write(1, "il risultato della read 0\n", 26) = 26
+6240  write(1, "IL SERVER HA LETTO:\n", 20) = 20
+6240  write(1, "il server stampa il token (null)"..., 33) = 33
+6240  --- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=NULL} ---
+6238  <... accept resumed>)             = ?
+6240  +++ killed by SIGSEGV (core dumped) +++
+6238  +++ killed by SIGSEGV (core dumped) +++

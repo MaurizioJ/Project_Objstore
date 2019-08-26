@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 
 
 void cleanup() {
@@ -20,10 +21,11 @@ void cleanup() {
 
 void mystrok_r(char *buffer, char **data){
 	char *token,*saveptr=NULL;
-	char a[BUFSIZE];
+	int n= strlen(buffer)+1;
+	char *a=malloc(n*sizeof(char));
 
-	memset(a,'\0',BUFSIZE);
-	memcpy(a,buffer,BUFSIZE);
+	memset(a,'\0',n);
+	memcpy(a,buffer,n);
 	token=strtok_r(a,"\n",&saveptr);
 	strcpy(*data,token);
 	printf("contenuto di data in mystrok_r e'%s\n", *data);
@@ -131,12 +133,12 @@ printf("dim_store_len %d\n",dim_store_len );
 	while(len>0){
 		memset(buffer,'\0',BUFSIZE);
 		n=read(connfd,buffer,BUFSIZE);
-		printf("bytes letti %d\n",n );
+		//printf("bytes letti %d\n",n );
 			if(n>0){
 				write(fd,buffer,n);
 			}
 		len-=n;
-		printf("len %d\n", len);
+	//	printf("len %d\n", len);
 	}
 
 	close(fd);
@@ -144,28 +146,53 @@ printf("dim_store_len %d\n",dim_store_len );
 return 0;
 }
 
-void retrieve(char* buffer,char *dir_name, char** block){
-	char *name= malloc(BUFSIZE*sizeof(char)); 
+int retrieve(char* buffer,char *dir_name, char** block, int* len_block){
+	int n=strlen(dir_name)+1;
+	char *name= malloc(n*sizeof(char)); 
+	memset(name,'\0',n);
 	char *token,*saveptr=NULL,*last_token;
-	last_token=malloc(BUFSIZE*sizeof(char));
+	int len;
+	last_token=malloc(BUFSIZE*sizeof(char));  // BUFSIZE dim max del NOME del file 
 
-	memset(name,'\0',BUFSIZE);
-
-	token=strtok_r(buffer," ", &saveptr); // token = "RETRIEVE"
+	//sto usando buffer, rischio di compromettere il contenuto, ma dopo buffer non lo uso piu' 
+	token=strtok_r(buffer," ", &saveptr); // token = "RETRIEVE" 
 	while(token){
 		strcpy(last_token,token);
-		token=strtok_r(NULL," ", &saveptr); 
+		token=strtok_r(NULL," \n", &saveptr); 
 	}
-	strcpy(name,dir_name); //copia il path in dir_name 
+	strncpy(name,dir_name,n); 
+	int m= n + (strlen(last_token)+2);
+printf("retrieve path %s\n", dir_name);
+printf("name stampa %s\n",name );
+	char *tmp= realloc(name,sizeof(char) * m );
+		if(!tmp){
+			perror("error realloc buffer ");
+		} 
+		else{
+			name=tmp;
+		}
 	strcat(name,"/");
+
 	strcat(name,last_token);
 	printf("file da trovareeeee %s\n", name);
 
 	int fd;
+	// sulla open dovremmo controllare se il file che sto cercando esiste 
 	SYSCALL(fd,open(name,O_RDONLY,0777),"chiamata open "); //gestione errore lettura 
+	struct stat statbuf;
+	stat(name,&statbuf); //potrei fare un controllo sul valore restituito 
+	*len_block= statbuf.st_size; //dimensione file name 
+	printf("len_block e' %d\n", *len_block );
+	*block= malloc((*len_block)*sizeof(char));
 	int res_read;
-	SYSCALL(res_read,read(fd,*block,BUFSIZE),"messaggio lettura: "); //VA BENE BUFSIZE?????
-	//printf("IL CONTENUTO DEL BLOCCO E' %s\n", *block); 
+	SYSCALL(res_read,read(fd,*block,(*len_block)),"messaggio lettura: "); //VA BENE BUFSIZE?????
+	//printf("IL CONTENUTO DEL BLOCCO E' %s\n", *block);
+	int l=(floor(log10(*len_block)))+1; 
+	len=strlen(last_token)+ l + (*len_block) + 10;
+	// CHIUDI FD 
+	close(fd);
+
+return len;
 }
 
 
@@ -200,8 +227,8 @@ void *create_thread(void *arg){
 		printf("IL SERVER HA LETTO:%s\n", buffer );
 		
 
-		char request[11]; 
-		memset(request,'\0',11);
+		char request[10]; 
+		memset(request,'\0',10);
 		strncpy(request,buffer,10); //va bene ?
 
 //printf("il server stampa il buffer letto %s\n",request );
@@ -230,8 +257,10 @@ printf("%s\n",s );
 	}
 
 	//STORE
-	char *store_len=malloc(BUFSIZE*sizeof(char)); //stringa che conterra' STORE + nome + len
-	memset(store_len,'\0',BUFSIZE);
+	int dim=strlen(buffer)+1; //da rivedere (store_len non usera' mai tutto lo spazio allocato)
+	printf("dim buffer e' %d\n",dim );
+	char *store_len=malloc(dim*sizeof(char)); //stringa che conterra' STORE + nome + len
+	memset(store_len,'\0',dim);
 	
 	if(!strcmp(token,"STORE")){
 		
@@ -252,28 +281,27 @@ printf("%s\n",s );
 			strcpy(s,"KO memorizzazione fallita \n"); //trova messaggio significativo 
 		}
 	}
-
 	//RETRIEVE
-/*	if(!strcmp(token,"RETRIEVE")){
+	if(!strcmp(token,"RETRIEVE")){
+	printf("stampa percorso name %s\n", dir_name);
 		char *buf_lenght= malloc(BUFSIZE*sizeof(char));
-		char* block=malloc(BUFSIZE*sizeof(char)); 
-		char len[BUFSIZE];
-		memset(block,'\0',BUFSIZE);
-		memset(len,'\0',BUFSIZE);
-
+		char* block; 
+		int len_block=0;
 		printf("RETRIEVE success\n");
-		retrieve(buffer,dir_name,&block);
-
+		int len=retrieve(buffer,dir_name,&block, &len_block);
+printf("vediamo dove si ferma\n");
 		if(block!=NULL){
-			//printf("l contenuto restituito dalla funzione retrieve e':%s\n",block );
-			size_t len=strlen(block); // non metto +1 perche' nel contenuto di block c'e' gia' '\0'
-			sprintf(buf_lenght,"%ld",len);
-				strcpy(s,"DATA ");
-				strcat(s,buf_lenght);
-				strcat(s,"\n");
-			//printf("%s\n",s );
-				strcat(s,block);
-						printf("il pacchetto da inviare al client e' %s\n", s);
+			//printf("l contenuto restituito dalla funzione retrieve e':%s\n",block );	 
+			char* tmp_s= realloc(s,len*sizeof(char));
+				if(!tmp_s){
+					perror("invalid realloc ");
+				}
+				else{
+					s=tmp_s;
+				}
+			sprintf(buf_lenght,"%d",len_block);
+			int len_s=snprintf(s,len,"DATA %s \n %s",buf_lenght,block);
+			//printf("il pacchetto da inviare al client e' %s\n", s);
 
 		
 		}
@@ -281,22 +309,49 @@ printf("%s\n",s );
 			printf("retrieve fallita \n");
 			strcpy(s,"KO recupero dati fallito \n"); //trova messaggio significativo 
 		}
+
 	}
-*/
+
+	//DELETE
+	if(!strcmp(token,"DELETE")){
+		token=strtok_r(buffer," ",&saveptr);
+		if(token){ // path del file ./data/client/nome_file
+			token=strtok_r(NULL, " ", &saveptr);
+			printf("veDIAMO CHE SDTAMPA %s\n",token );
+		int n= strlen(token) + strlen(dir_name) + 2; 		
+		char *name= malloc(n*sizeof(char));
+		memset(name,'\0',n);
+			strcpy(name,dir_name); //copio in name il percorso data/nome_client
+			strcat(name,"/");
+			strcat(name,token);
+			printf("\n");
+			printf("il nome da cancellare e' il nomessssssssssss %s \n",name);
+			int res=remove(name);
+			if(!res){
+				snprintf(s,BUFSIZE,"OK \n");
+			}
+			else{ 
+				snprintf(s,BUFSIZE,"KO errore rimozione oggetto \n");
+			}
+		}
+	}
+
+
 
 /******************* SCRIVO AL CLIENT *******************/
 
-printf("scrivo al client il risultato prodotto dal server\n");
+//printf("scrivo al client il risultato prodotto dal server\n");
 		//SYSCALL(n, writen(conn_fd, s, strlen(s)+1), "write");
 		int res_write;
-		SYSCALL(res_write,write(connfd,s,strlen(s)+1), "error write");
-printf("dopo la scrittura del server %s\n", s);
+		SYSCALL(res_write,write(connfd,s,strlen(s)+1), "error write"); //strlen s sostituirlo con len_s 
+//printf("dopo la scrittura del server %s\n", s);
 		//printf("il socket del server e' %ld\n", conn_fd);
 
 //free(buffer);
 
-    	} while(1);
-	close(connfd);	    
+   	} while(1);
+	
+close(connfd);	    
 
 // 	return NULL;
 } //fine thread 
