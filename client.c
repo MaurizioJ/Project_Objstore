@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include<math.h>
 
 
 #include"lib_client.h"
@@ -15,12 +16,15 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "usa: %s nome_client\n", argv[0]);
 	return -1;
 	}
+	if(strlen(argv[1])>BUFSIZE){ //controllo nome client che non sia piu' lungo di 256 caratteri
+		fprintf(stderr, "nome_client troppo lungo \n");
+	return -1;
+	}
 
-	char * client=malloc(sizeof(char)*(strlen(argv[1]) +1) );
+	char* client=malloc(sizeof(char)*(strlen(argv[1]) +1) );
 	strcpy(client,argv[1]);
 	int res_store; 
-	int res; 
-	int n;
+	int res,n,del;
 	res=os_connect(client);
 printf("RISULTATO OS_CONNECT %d\n",res);
 	int pos_fd; 
@@ -38,6 +42,10 @@ printf("RISULTATO OS_CONNECT %d\n",res);
 		char  name_data[BUFSIZE];
 		memset(name_data,'\0',BUFSIZE);
 		strcpy(name_data,"bibbo.txt"); 
+		if(strlen(name_data)>BUFSIZE){ //controllo lunghezza nome del file 
+			fprintf(stderr, "%s: nome_file troppo lungo \n", name_data);
+		return -1;
+		}
 printf("STAMPA NOME FILE %s\n",name_data ); // stampa nome file
 		size_t len;  
 		struct stat statbuf;
@@ -60,18 +68,21 @@ printf("RISULTATO STORE %d\n", res_store);
 //	int p[5]={1,2,3,4,5};
 //	res_store=os_store("deh",p,5*sizeof(int));
 		//recupero oggetto precedentemente memorizzato 
-/*		if(res_store){
+		if(res_store){
 			char *res_retrieve;
 			res_retrieve=(char*) os_retrieve(name_data);
-			printf("il risultato della funzione os_retrieve e' %s\n",res_retrieve);
-
+		//	printf("il risultato della funzione os_retrieve e' %s\n",res_retrieve);
 		}
+	
 		else{
-			printf("recupero dati fallito\n");
+			printf("memorizzazione dati fallita\n");
 			//recupero dati fallito
 		}
-*/
+	
+			del=os_delete(name_data);
+	
 	}
+
 	else{
 		// gestione errore, connessione non avvenuta
 	}

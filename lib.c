@@ -4,6 +4,7 @@
 #include "conn.h"
 #include <assert.h>
 #include <stdlib.h>
+#include<math.h>
 #include "lib_client.h"
 
 static int sock_fd;
@@ -71,12 +72,16 @@ int os_connect(char *name){
 	  SYSCALL(res, connect(sock_fd, (struct sockaddr*)&sa, sizeof(sa)), "connect");
     // connessione client-server avvenuta 
 	
-   	char buffer[BUFSIZE]; 
+	int len= 12 + strlen(name) + 1;
+   	char* buffer= malloc(len*sizeof(char));
+   	if(!buffer){
+   		perror("error malloc buffer ");
+   	}
     /*memset(buffer,'\0',BUFSIZE); // METTO /0 IN TUTTE LE POS DEL BUFFER 
 
 /************************* WRITE AL SERVER *************************/
     int rw;
-    snprintf(buffer,BUFSIZE,"REGISTER %s \n",name);
+    snprintf(buffer,len,"REGISTER %s \n",name);
   	SYSCALL(rw,write(sock_fd,buffer,strlen(buffer)+1),"write");
 
 //printf("il socket del client e' %d\n", sock_fd);
@@ -86,8 +91,8 @@ int os_connect(char *name){
 /************************* RISPOSTA DEL SERVER *************************/
 	//leggo la risposta del server 
 	char response[BUFSIZE];
-  char *token;
-  char **saveptr=NULL;
+  	char *token;
+  	char **saveptr=NULL;
 	memset(response,'\0',BUFSIZE);
   
     SYSCALL(rw,read(sock_fd, response, BUFSIZE),"read");
@@ -109,13 +114,13 @@ return res;
 
 
 int os_store(char *name, void *block, size_t len){
-	
-	char* buffer= malloc(BUFSIZE*sizeof(char)); 
-  memset(buffer,'\0',BUFSIZE); // METTO \0 IN TUTTE LE POS DEL BUFFER 
+	double n= 12 + strlen(name) + 1 + floor(log10(len))+1;
+	char* buffer= malloc(n*sizeof(char)); 
+  	memset(buffer,'\0',n); // METTO \0 IN TUTTE LE POS DEL BUFFER 
 
 	//int res_req=request(name,len,buffer); // STORE + name + len 
 
-  int res_req=snprintf(buffer,BUFSIZE,"STORE %s %ld \n ",name,len);
+  int res_req=snprintf(buffer,n,"STORE %s %ld \n ",name,len);
 
 printf("snprintf %d\n",res_req);
 int size=res_req+len;
@@ -160,87 +165,92 @@ return res;
 }
 
 
-/*void *os_retrieve(char *name){
+void *os_retrieve(char *name){
 
-    char buffer[BUFSIZE]; 
-    memset(buffer,'\0',BUFSIZE); // METTO /0 IN TUTTE LE POS DEL BUFFER 
-    char reg[10]="RETRIEVE ";
-    strcpy(buffer,reg); //copio la stringa RETRIEVE NEL BUFFER
-    strcat(buffer,name); //concateno il nome del client con la stringa RETRIEVE
-    // scrivo al server 
-    write(sock_fd,buffer,strlen(buffer)+1);
-    //printf("il socket del client e' %d\n", sock_fd);
-    printf("RETRIEVE BUFFER %s\n", buffer);
-  */
+	int rw,count=0;
+	int n= strlen(name)+ 1 + 12;
+	char *buffer=malloc(n*sizeof(char));
+	memset(buffer,'\0',n); // METTO \0 IN TUTTE LE POS DEL BUFFER 
+	int size=snprintf(buffer,n,"RETRIEVE %s \n",name);
+	printf("buffer retrieve %s\n", buffer);
+	SYSCALL(rw,write(sock_fd,buffer, size), "write");
+
    /******** LEGGO LA RISPOSTA DEL SERVER ********/
-  /*char response[BUFSIZE];
-  char *token;
-  char *last_token=malloc(BUFSIZE*sizeof(char));
-  char *tok_len=malloc(BUFSIZE*sizeof(char));
-  char *tok_block=malloc(BUFSIZE*sizeof(char));
-  memset(last_token,'\0',BUFSIZE);
-  memset(tok_len,'\0',BUFSIZE);
-  memset(tok_block,'\0',BUFSIZE);
-  memset(response,'\0',BUFSIZE);
-  char *saveptr=NULL;
-  int res;
-  char *block;
-  char *resp=malloc(BUFSIZE*sizeof(char));
-    //SYSCALL(foo, readn(sock_fd, response, BUFSIZE), "read");  
-    
-    read(sock_fd, response, BUFSIZE); 
-    strncpy(resp,response,BUFSIZE); // servira' per la mystrok_r MEMCPY 
-    printf("risposta SERVER RETRIEVE %s\n", response);
-    token=strtok_r(response," ",&saveptr);
+	char* res;
+	char* response= malloc(BUFSIZE*sizeof(char));
+	char *token,*saveptr=NULL;
+	char* tmp=malloc(BUFSIZE*sizeof(char));
+	char* last_token=malloc(30*sizeof(char)); 
+	SYSCALL(count, readn_token(sock_fd, response), "read");
+	printf("response:%s\n",response );
+	memset(tmp,'\0',BUFSIZE);
+	memcpy(tmp,response,count+1);
+	token=strtok_r(tmp," ",&saveptr); //token=DATA
+	printf("token %s\n",token );
+	if(token){
+		token=strtok_r(NULL," ", &saveptr); 
+		strcpy(last_token,token); //last_token salvera' il contenuto di len 
+	}
+	printf("last_token %s\n",last_token );
+	long len= strtol(last_token, NULL, 10);
+	printf("aaaa%ld\n",len );
+	int dim_data_len= 8+(floor(log10(len))+1);//7=DATA + 2 SPAZI + \N + " "
+	printf("lallalal%d\n",dim_data_len);
+	int b = count - dim_data_len; 
+	printf("b sara' %d\n",b );
+	char* tmp_response= realloc(response,len*sizeof(char));
+		if(!tmp_response){
+			res=NULL;
+			perror("error invalid realloc");
+		}
+	printf("il client ha letto dal server %saaa\n", last_token);
+	
+ 	if(b<0){
+ 		read(sock_fd,response,1); //leggo lo spazio vuoto dopo \n 
+ 	}
+ 	res=malloc(len*sizeof(char));
+ 	if(b>0){
+		memcpy(res,&response[dim_data_len],b);
+		len-=b; 
+	}
+	printf("res: %s\n", res);
+	printf("dopo %c\n", response[dim_data_len]);
 
-    if(!strcmp(token,"DATA")){ // controllo se il primo token sia DATA 
-    //  printf("%s\n",token );
-      if(token){
-          token=strtok_r(NULL," \n ",&saveptr);
-          strcpy(tok_len,token);
-        printf("token len %s\n", tok_len);
-      }
-
-     /* if(token){
-          token=strtok_r(NULL,"\n",&saveptr);
-          strcpy(tok_block,token);
-        printf("token BLOCK %s\n",tok_block);
-      }*/
-
- /*     size_t len;
-      char *endptr;
-      len=strtol(tok_len, &endptr, 10);
-      printf("la lunghezza della stringa e' %ld\n",len );
-      size_t left=len - strlen(tok_block); //quanti bytes mi restano da leggere
-        
-        if(left==0){ //nel buffer sono riuscito a scrivere tutto in un solo colpo 
-            return tok_block;
-        }  
-
-        if(left>0){ 
-          char *data=malloc(sizeof(char)*len);
-          mystrok_r(resp,&data); // ottengo i bytes data
-          printf("la mia strok produce %s\n",data );
-          int n;
-          block=malloc(len*sizeof(char));
-          memset(block,'\0',len);
-          strcat(block,tok_block); //in block ci copio i bytes che avevo gia' letto
-
-            data+=strlen(tok_block)+1;
-            while(left>0){
-              n=read(sock_fd,data,left);
-              left-=n;
-              strcat(block,data);
-              data+=n;
-             }
-          
-        printf("il block stampato e' %s\n",block );
-        return block;
-      }
-    }
-    else{
-      //stampa KO
-    }
-
+	int nb=0;
+	while(len>0){
+		memset(response,'\0',BUFSIZE);
+		nb=read(sock_fd,response,BUFSIZE);
+			if(nb>0){
+				strncat(res,response,nb);
+			}
+	len-=nb;
+	}
+	//printf("buffer res %s\n", res);
+return res;
+//DEFINIRE TUTTI I CASI DI ERRORI E QUINDI SETTARE RES = NULL 
 }
-*/
+
+int os_delete(char* name){
+
+	int rw;
+	int n= strlen(name)+ 1 + 10;
+	char *buffer=malloc(n*sizeof(char));
+	memset(buffer,'\0',n); // METTO \0 IN TUTTE LE POS DEL BUFFER 
+	int size=snprintf(buffer,n,"DELETE %s \n",name);
+	printf("buffer %s\n", buffer);
+	SYSCALL(rw,write(sock_fd,buffer, size), "write");
+
+   /******** LEGGO LA RISPOSTA DEL SERVER ********/
+	
+	read(sock_fd,buffer,BUFSIZE);
+	
+	char *saveptr=NULL;
+	char* token= strtok_r(buffer," ",&saveptr);
+	
+	if(!strcmp(buffer,"OK")){
+		printf("cancellazione effettuata\n");
+		return 1;
+	}
+printf("%s\n",buffer );
+return 0;
+}
